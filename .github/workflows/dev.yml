@@ -21,7 +21,7 @@ jobs:
       - name: "Build, Tag and Push Image to Amazon ECR"
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: pet-clinic
+          ECR_REPOSITORY: petclinic
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$(basename $GITHUB_REF)-${GITHUB_SHA:0:8} .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$(basename $GITHUB_REF)-${GITHUB_SHA:0:8}
