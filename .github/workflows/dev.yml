@@ -28,3 +28,38 @@ jobs:
       - name: Logout of Amazon ECR
         if: always()
         run: docker logout ${{ steps.login-ecr.outputs.registry }}
+  kubernetes:
+    name: "Kubernetes Deployment"
+    needs: build # require job to wait for 'build' to complete
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: "Configure AWS Credentials"
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      - name: "Login to Amazon ECR"
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+      - name: "Create Kubeconfig"
+        id: kubeconfig
+        run: |
+          aws eks update-kubeconfig --name ${{ secrets.KUBE_CLUSTER }}
+          cat $HOME/.kube/config | base64 > $HOME/.kube_config_data
+      - name: "Resolve Parameter" # Replace placeholders with actual values
+        id: resolve
+        run: |
+          cd ./kubernetes/
+          # use '|' as a delimiter to avoid conflicts with values containing '/'
+          sed "s|%role_arn%|${{ secrets.ROLE_ARN }}|g" service-account.yaml
+          sed "s|%image%|${{ steps.login-ecr.outputs.registry }}/petclinic:$(basename $GITHUB_REF)-${GITHUB_SHA:0:8}|g" deployment.yaml
+      - name: "Deploy"
+        uses: steebchen/kubectl@1.0.0
+        env:
+          KUBE_CONFIG_DATA: cat $HOME/.kube_config_data
+        with:
+          args: |
+            apply -f kubernetes/service-account.yaml -n petclinic
+            apply -f kubernetes/deployment.yaml -n petclinic
