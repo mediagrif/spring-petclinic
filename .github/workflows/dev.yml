@@ -58,15 +58,14 @@ jobs:
       - name: "Setup AWS cli"
         run: |
           pip install awscli
+          aws eks update-kubeconfig --name ${{ secrets.KUBE_CLUSTER }}
+      - name: "Setup Kubectl"
+        uses: engineerd/setup-kind@v0.3.0
       - name: "Deploy"
-        uses: steebchen/kubectl@master
         env:
-          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: us-east-1
-        with:
-          args: |
-            echo $PATH
-            apply -f kubernetes/service-account.yaml -n petclinic
-            apply -f kubernetes/deployment.yaml -n petclinic
+        run: |
+          apply -f kubernetes/service-account.yaml -n petclinic
+          apply -f kubernetes/deployment.yaml -n petclinic
