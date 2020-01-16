@@ -50,10 +50,21 @@ jobs:
           # use '|' as a delimiter to avoid conflicts with values containing '/'
           sed -i "s|%role_arn%|${{ secrets.ROLE_ARN }}|g" service-account.yaml
           sed -i "s|%image%|${{ steps.login-ecr.outputs.registry }}/petclinic:$(basename $GITHUB_REF)-${GITHUB_SHA:0:8}|g" deployment.yaml
+      - name: "Setup Python"
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.x
+          architecture: x64
+      - name: "Setup AWS cli"
+        run: |
+          pip install awscli
       - name: "Deploy"
         uses: steebchen/kubectl@master
         env:
           KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: us-east-1
         with:
           args: |
             apply -f kubernetes/service-account.yaml -n petclinic
