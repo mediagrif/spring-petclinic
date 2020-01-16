@@ -56,7 +56,7 @@ jobs:
           sed "s|%role_arn%|${{ secrets.ROLE_ARN }}|g" service-account.yaml
           sed "s|%image%|${{ steps.login-ecr.outputs.registry }}/petclinic:$(basename $GITHUB_REF)-${GITHUB_SHA:0:8}|g" deployment.yaml
       - name: "Deploy"
-        uses: steebchen/kubectl@1.0.0
+        uses: steebchen/kubectl@master
         env:
           KUBE_CONFIG_DATA: cat $HOME/.kube_config_data
         with:
