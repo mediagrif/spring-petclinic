@@ -67,5 +67,5 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: us-east-1
         run: |
-          apply -f kubernetes/service-account.yaml -n petclinic
-          apply -f kubernetes/deployment.yaml -n petclinic
+          kubectl apply -f kubernetes/service-account.yaml -n petclinic
+          kubectl apply -f kubernetes/deployment.yaml -n petclinic
