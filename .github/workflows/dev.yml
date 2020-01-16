@@ -43,11 +43,6 @@ jobs:
       - name: "Login to Amazon ECR"
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
-      - name: "Create Kubeconfig"
-        id: kubeconfig
-        run: |
-          aws eks update-kubeconfig --name ${{ secrets.KUBE_CLUSTER }}
-          cat $HOME/.kube/config | base64 > $HOME/.kube_config_data
       - name: "Resolve Parameter" # Replace placeholders with actual values
         id: resolve
         run: |
@@ -58,7 +53,7 @@ jobs:
       - name: "Deploy"
         uses: steebchen/kubectl@master
         env:
-          KUBE_CONFIG_DATA: cat $HOME/.kube_config_data
+          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
         with:
           args: |
             apply -f kubernetes/service-account.yaml -n petclinic
